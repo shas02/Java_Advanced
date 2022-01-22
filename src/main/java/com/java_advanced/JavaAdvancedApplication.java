@@ -1,6 +1,5 @@
 package com.java_advanced;
 
-import com.java_advanced.entity.Movie;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 

@@ -15,7 +15,6 @@ import java.time.LocalDateTime;
 @Slf4j
 public class ErrorController {
 
-
     @ExceptionHandler(value = MethodArgumentTypeMismatchException.class)
     @ResponseStatus(HttpStatus.BAD_REQUEST)
     public ErrorResponse handleMethodArgumentTypeMismatchException(MethodArgumentTypeMismatchException e) {
@@ -29,4 +28,5 @@ public class ErrorController {
         log.info(e.getMessage());
         return new ErrorResponse(LocalDateTime.now(), HttpStatus.NOT_FOUND.value(), e.getMessage());
     }
+
 }
