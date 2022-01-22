@@ -1,21 +1,25 @@
 package com.java_advanced.service;
 
 import com.java_advanced.dao.MovieDao;
+import com.java_advanced.dto.MoviePage;
 import com.java_advanced.entity.Movie;
-import lombok.AllArgsConstructor;
+import com.java_advanced.exceptions.ItemNotFoundException;
 import lombok.RequiredArgsConstructor;
 import org.apache.commons.lang3.CharUtils;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.web.server.ResponseStatusException;
 
 import java.util.List;
+import java.util.Optional;
 
 
 @Service
 @RequiredArgsConstructor
-public class MovieServiceImpl implements MovieService{
+public class MovieServiceImpl implements MovieService {
 
     @Autowired
     private final MovieDao movieDao;
@@ -26,8 +30,20 @@ public class MovieServiceImpl implements MovieService{
     }
 
     @Override
-    public List<Movie> getAllMovies() {
-        return movieDao.findAll();
+    public Optional<Movie> getMovieByTitle(String title) {
+        final Optional<Movie> movie = movieDao.findByTitle(title);
+        return Optional.ofNullable(movie.orElseThrow(() -> new ItemNotFoundException("Movie", "title", title)));
+    }
+
+    @Override
+    public MoviePage getAllMovies(int page, int size) {
+        final Page<Movie> movies = movieDao.findAll(PageRequest.of(page, size));
+        final MoviePage moviePage = new MoviePage();
+        moviePage.setMovies(movies.getContent());
+        moviePage.setCurrentPage(movies.getNumber());
+        moviePage.setLast(movies.isLast());
+        moviePage.setTotalElements(movies.getTotalElements());
+        return moviePage;
     }
 
     @Override
@@ -42,7 +58,7 @@ public class MovieServiceImpl implements MovieService{
     public Movie updateMovie(int id, Movie movie) {
         movie.setId(id);
         if (!movieDao.existsById(id)) {
-          throw new ResponseStatusException(HttpStatus.NOT_FOUND, "No movie found");
+            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "No movie found");
         }
         return movieDao.saveAndFlush(movie);
     }
