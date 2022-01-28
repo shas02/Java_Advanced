@@ -1,6 +1,8 @@
 package com.java_advanced.service;
 
 import com.java_advanced.dao.MovieDao;
+import com.java_advanced.dto.MovieCreateDto;
+import com.java_advanced.dto.MovieDto;
 import com.java_advanced.dto.MoviePage;
 import com.java_advanced.entity.Movie;
 import com.java_advanced.exceptions.ItemNotFoundException;
@@ -15,6 +17,7 @@ import org.springframework.web.server.ResponseStatusException;
 
 import java.util.List;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 
 @Service
@@ -23,6 +26,9 @@ public class MovieServiceImpl implements MovieService {
 
     @Autowired
     private final MovieDao movieDao;
+
+    @Autowired
+    private DirectorService directorService;
 
     @Override
     public Movie getMovieById(int id) {
@@ -39,7 +45,15 @@ public class MovieServiceImpl implements MovieService {
     public MoviePage getAllMovies(int page, int size) {
         final Page<Movie> movies = movieDao.findAll(PageRequest.of(page, size));
         final MoviePage moviePage = new MoviePage();
-        moviePage.setMovies(movies.getContent());
+        final List<Movie> content = movies.getContent();
+        moviePage.setMovies(content.stream().map(movie -> {
+            MovieDto movieDto = new MovieDto();
+            movieDto.setMovieId(movie.getId());
+            movieDto.setDuration(movie.getDuration());
+            movieDto.setTitle(movie.getTitle());
+            movieDto.setDirectorId(movie.getDirector().getId());
+            return movieDto;
+        }).collect(Collectors.toList()));
         moviePage.setCurrentPage(movies.getNumber());
         moviePage.setLast(movies.isLast());
         moviePage.setTotalElements(movies.getTotalElements());
@@ -47,11 +61,17 @@ public class MovieServiceImpl implements MovieService {
     }
 
     @Override
-    public Movie createMovie(Movie movie) {
+    public MovieCreateDto createMovie(MovieCreateDto movie) {
         if (!CharUtils.isAsciiAlphaUpper(movie.getTitle().charAt(0))) {
-            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Title should start with capital letter");
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Title should start with capital letter!");
         }
-        return movieDao.saveAndFlush(movie);
+        Movie movieDb = new Movie();
+        movieDb.setTitle(movie.getTitle());
+        movieDb.setDuration(movie.getDuration());
+        movieDb.setDirector(directorService.getDirectorById(movie.getDirectorId()));
+        movieDao.saveAndFlush(movieDb);
+        movie.setId(movieDb.getId());
+        return movie;
     }
 
     @Override

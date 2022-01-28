@@ -12,7 +12,7 @@ import java.util.List;
 @Data
 public class MoviePage {
 
-    private List<Movie> movies;
+    private List<MovieDto> movies;
     private long totalElements;
     private int currentPage;
     private boolean last;

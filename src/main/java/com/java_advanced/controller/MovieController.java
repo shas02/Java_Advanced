@@ -1,5 +1,6 @@
 package com.java_advanced.controller;
 
+import com.java_advanced.dto.MovieCreateDto;
 import com.java_advanced.dto.MoviePage;
 import com.java_advanced.entity.Movie;
 import com.java_advanced.service.MovieService;
@@ -32,7 +33,7 @@ public class MovieController {
 
     //    @RequestMapping(value = "/movie", method = RequestMethod.GET)
     @GetMapping
-    public MoviePage getMovies(@RequestParam(defaultValue = "0") int page, @RequestParam(defaultValue = "3") int size) {
+    public MoviePage getMovies(@RequestParam(defaultValue = "0") int page, @RequestParam(defaultValue = "10") int size) {
         return movieService.getAllMovies(page, size);
     }
 
@@ -48,7 +49,7 @@ public class MovieController {
 
     @PostMapping
     @ResponseStatus(HttpStatus.CREATED)
-    public Movie insertMovie(@RequestBody @Valid Movie movie) {
+    public MovieCreateDto insertMovie(@RequestBody @Valid MovieCreateDto movie) {
         LOG.info("Handling POST request for object {}", movie);
         return movieService.createMovie(movie);
     }
@@ -58,7 +59,6 @@ public class MovieController {
     public Movie updateMovie(@PathVariable int id, @RequestBody @Valid Movie movie) {
         return movieService.updateMovie(id, movie);
     }
-
 
     @DeleteMapping(value = "/{id}")
     @ResponseStatus(HttpStatus.NO_CONTENT)
